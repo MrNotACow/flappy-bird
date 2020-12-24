@@ -1,11 +1,13 @@
 from tkinter import *
 import time
+import random
 tk = Tk()
 tk.title('Floppy Bird')
 cv = Canvas(tk, width=500, height=500)
 cv.pack()
 jumpPower = 4
 gravity = 5
+obstaclePosition = random.randint(-100, 100)
 
 
 class guy:
@@ -26,48 +28,45 @@ class guy:
 
 
 class obstacle:
-    def __init__(self, position):
+    def __init__(self, height, x, y, ):
         self.canvas = cv
-        self.cooldowntime = 4
+        self.complete = False
+        self.height = height
+        self.x = x
+        self.y = y
+        self.coolDownTime = 4
         self.counter = 0
         self.xMomentum = 0
-        self.id = cv.create_rectangle(0, 0, 10, 300)
+        self.id = cv.create_rectangle(0, 0, 10, height)
         self.pos = self.canvas.coords(self.id)
-        if position == 'bottom':
-            self.canvas.coords(self.id, 490, 300, 500, 500)
-            print('initial resetting')
-        else:
-            self.canvas.coords(self.id, 490, 0, 500, 200)
-            print('initial resetting')
+        self.canvas.coords(self.id, self.x, self.y, self.x + 10, self.y - self.height)
+
+    def changeLocation(self, x, y):
+        self.complete = False
+        self.canvas.coords(self.id, x, y, x + 10, y - self.height)
 
     def draw(self, position):
-
         self.canvas.move(self.id, self.xMomentum, 0)
         self.pos = self.canvas.coords(self.id)
         self.counter = self.counter + 0.01
         if self.pos[0] <= 0:
-            print('got to the end')
+            self.complete = True
+            # print('got to the end')
             self.xMomentum = 0
-            if position == 'bottom':
-                self.canvas.coords(self.id, 490, 300, 500, 500)
-                print('bottom resetting ' + str(self.pos))
-            else:
-                self.canvas.coords(self.id, 490, 0, 500, 200)
-                print('top resetting ' + str(self.pos))
-        if self.counter >= 4:
-            self.goforwards()
+        if self.counter >= self.coolDownTime:
+            self.goForwards()
             print('go forwards')
             self.counter = 0
 
-    def goforwards(self):
+    def goForwards(self):
         self.xMomentum = -3
-        print('going forwards')
-        self.cooldowntime = self.cooldowntime - 1
-        print(self.cooldowntime)
+        # print('going forwards')
+        self.coolDownTime = self.coolDownTime - 0.2
+        # print(self.coolDownTime)
 
 
-bottomThing = obstacle(position="bottom")
-topThing = obstacle(position='top')
+topThing = obstacle(1000, 490, 200)
+bottomThing = obstacle(1000, 490, 1300)
 bird = guy()
 while True:
     time.sleep(0.01)
@@ -75,3 +74,7 @@ while True:
     topThing.draw('top')
     bottomThing.draw('bottom')
     tk.update()
+    if topThing.complete:
+        randomVariable = random.randint(-225, 225)
+        topThing.changeLocation(490, 200 + randomVariable)
+        bottomThing.changeLocation(490, 1300 + randomVariable)
